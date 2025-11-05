@@ -1,8 +1,5 @@
 const words = [
-  "apple","banana","orange","grape","cherry","mango","lemon","watermelon",
-  "keyboard","monitor","python","javascript","unity","elephant","rocket",
-  "computer","internet","cloud","mouse","guitar","school","coding","gamer",
-  "elijah","creative","planet","dream","future","happy","energy","ocean"
+  "apple","banana","orange","grape","cherry","mango","lemon","keyboard","monitor","python","unity","rocket"
 ];
 
 const container = document.getElementById("word-container");
@@ -20,11 +17,15 @@ let totalWords = 0;
 
 function initWords() {
   container.innerHTML = "";
-  for (let i = 0; i < 100; i++) {
-    const span = document.createElement("span");
-    span.className = "word";
-    span.textContent = words[Math.floor(Math.random() * words.length)];
-    container.appendChild(span);
+  for (let i = 0; i < 80; i++) {
+    const word = document.createElement("span");
+    word.className = "word";
+    word.innerHTML = `<span class="letters">${words[Math.floor(Math.random() * words.length)]
+      .split("")
+      .map((l) => `<span class="letter">${l}</span>`)
+      .join("")}</span>`;
+    container.appendChild(word);
+    container.append(" ");
   }
   container.children[0].classList.add("current");
 }
@@ -38,14 +39,29 @@ function startTimer() {
   }, 1000);
 }
 
-input.addEventListener("input", () => {
+input.addEventListener("input", (e) => {
   startTimer();
-  const wordSpans = container.children;
+  const wordSpans = container.querySelectorAll(".word");
   const currentWord = wordSpans[currentIndex];
-  const typed = input.value.trim();
+  const letters = currentWord.querySelectorAll(".letter");
+  const typed = input.value.split("");
 
-  if (event.inputType === "insertText" && event.data === " ") {
-    if (typed === currentWord.textContent) {
+  // letter coloring
+  letters.forEach((letter, i) => {
+    if (!typed[i]) {
+      letter.className = "letter"; // reset
+    } else if (typed[i] === letter.textContent) {
+      letter.className = "letter correct-letter";
+    } else {
+      letter.className = "letter wrong-letter";
+    }
+  });
+
+  // move to next word on space
+  if (e.data === " ") {
+    const wordText = currentWord.textContent.trim();
+    const typedWord = input.value.trim();
+    if (typedWord === wordText) {
       currentWord.classList.add("correct");
       correctWords++;
     } else {
@@ -54,14 +70,12 @@ input.addEventListener("input", () => {
     totalWords++;
     currentWord.classList.remove("current");
     currentIndex++;
-    if (wordSpans[currentIndex]) {
-      wordSpans[currentIndex].classList.add("current");
-      input.value = "";
-    }
+    if (wordSpans[currentIndex]) wordSpans[currentIndex].classList.add("current");
+    input.value = "";
   }
 
   const wpm = Math.round((correctWords / ((60 - timeLeft) / 60)) || 0);
-  const accuracy = totalWords > 0 ? Math.round((correctWords / totalWords) * 100) : 100;
+  const accuracy = totalWords ? Math.round((correctWords / totalWords) * 100) : 100;
   wpmEl.textContent = wpm;
   accuracyEl.textContent = accuracy;
 });
@@ -69,11 +83,9 @@ input.addEventListener("input", () => {
 function endGame() {
   clearInterval(timer);
   input.disabled = true;
-  const finalWPM = wpmEl.textContent;
-  const finalAcc = accuracyEl.textContent;
-  container.innerHTML = `<h2>Test Finished!</h2>
-  <p>Your speed: <strong>${finalWPM} WPM</strong></p>
-  <p>Your accuracy: <strong>${finalAcc}%</strong></p>`;
+  container.innerHTML = `<h2>Finished!</h2>
+    <p>WPM: <strong>${wpmEl.textContent}</strong></p>
+    <p>Accuracy: <strong>${accuracyEl.textContent}%</strong></p>`;
 }
 
 restartBtn.addEventListener("click", () => {
