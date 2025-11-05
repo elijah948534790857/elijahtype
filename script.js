@@ -1,26 +1,35 @@
 let caret;
 
+function createCaret() {
+  caret = document.createElement("span");
+  caret.classList.add("caret");
+  return caret;
+}
+
 function placeCaret() {
-  if (caret) caret.remove();
+  // remove old caret if any
+  if (caret && caret.parentElement) caret.remove();
+
   const currentWord = container.querySelectorAll(".word")[currentIndex];
   if (!currentWord) return;
 
   const letters = currentWord.querySelectorAll(".letter");
-  let position = currentTyped.length;
+  const position = currentTyped.length;
 
-  caret = document.createElement("span");
-  caret.classList.add("caret");
+  const newCaret = createCaret();
 
   if (position < letters.length) {
-    letters[position].before(caret);
+    letters[position].before(newCaret);
   } else {
-    currentWord.appendChild(caret);
+    currentWord.appendChild(newCaret);
   }
+  caret = newCaret;
 }
 
 document.addEventListener("keydown", (e) => {
   handleKey(e);
-  placeCaret();
+  // small delay to allow DOM update
+  setTimeout(placeCaret, 10);
 });
 
 restartBtn.addEventListener("click", () => {
@@ -35,8 +44,8 @@ restartBtn.addEventListener("click", () => {
   wpmEl.textContent = "0";
   accuracyEl.textContent = "100";
   initWords();
-  placeCaret();
+  setTimeout(placeCaret, 50);
 });
 
 initWords();
-placeCaret();
+setTimeout(placeCaret, 50);
