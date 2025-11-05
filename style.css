@@ -1,7 +1,8 @@
+/* General layout */
 body {
-  background-color: #0f0f0f;
-  color: #eee;
-  font-family: 'Consolas', monospace;
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Consolas', 'Courier New', monospace;
   text-align: center;
   margin: 0;
   padding: 0;
@@ -13,40 +14,49 @@ body {
   padding: 20px;
 }
 
+/* Title + instructions */
 h1 {
-  color: #00ff99;
-  letter-spacing: 1px;
+  color: #00ffa2;
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 
 .hint {
-  color: #888;
+  color: #777;
   font-size: 14px;
 }
 
+/* Word display area */
 #word-container {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
   font-size: 24px;
   line-height: 1.8em;
   margin: 40px auto;
   text-align: left;
-  background: #1b1b1b;
-  padding: 20px;
+  padding: 25px;
   border-radius: 8px;
   height: 200px;
   overflow-y: auto;
   user-select: none;
+  box-shadow: 0 0 10px rgba(0, 255, 170, 0.15);
 }
 
+/* Words and letters */
 .word {
   margin-right: 10px;
   display: inline-block;
+  transition: background 0.2s ease;
 }
 
 .word.current {
-  text-decoration: underline;
+  text-decoration: underline 2px solid #00ffa2;
+  text-underline-offset: 4px;
 }
 
 .letter.correct-letter {
-  color: #00ff99;
+  color: #00ffa2;
 }
 
 .letter.wrong-letter {
@@ -54,36 +64,22 @@ h1 {
 }
 
 .word.correct {
-  background: rgba(0, 255, 153, 0.15);
+  background: rgba(0, 255, 170, 0.1);
+  border-radius: 3px;
 }
 
 .word.incorrect {
-  background: rgba(255, 77, 77, 0.15);
+  background: rgba(255, 77, 77, 0.1);
+  border-radius: 3px;
 }
 
-.stats {
-  margin-top: 30px;
-  font-size: 18px;
-}
-
-#restart {
-  margin-top: 20px;
-  background: #00ff99;
-  color: #000;
-  font-size: 16px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-#restart:hover {
-  background: #00ffaa;
-}
+/* Blinking caret */
 .caret {
   display: inline-block;
   width: 2px;
-  height: 1em;
-  background: #00ff99;
+  height: 1.2em;
+  background: #00ffa2;
+  margin-left: 0px;
   vertical-align: bottom;
   animation: blink 1s step-start infinite;
 }
@@ -94,3 +90,55 @@ h1 {
   }
 }
 
+/* Stats display */
+.stats {
+  margin-top: 30px;
+  font-size: 18px;
+  color: #ccc;
+}
+
+.stats p {
+  margin: 8px 0;
+}
+
+#time {
+  color: #00ffa2;
+}
+#wpm {
+  color: #ffaa00;
+}
+#accuracy {
+  color: #ff79c6;
+}
+
+/* Restart button */
+#restart {
+  margin-top: 30px;
+  background: #00ffa2;
+  color: #000;
+  font-size: 16px;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+#restart:hover {
+  background: #00ffbb;
+}
+
+/* Scrollbar styling for the typing area */
+#word-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#word-container::-webkit-scrollbar-thumb {
+  background: #00ffa2;
+  border-radius: 10px;
+}
+
+#word-container::-webkit-scrollbar-track {
+  background: #181818;
+}
