@@ -1,9 +1,10 @@
 const words = [
-  "apple","banana","orange","grape","cherry","mango","lemon","keyboard","monitor","python","unity","rocket"
+  "apple","banana","orange","grape","cherry","mango","lemon","keyboard","monitor",
+  "python","unity","rocket","computer","internet","cloud","mouse","gamer",
+  "elijah","planet","dream","future","power","speed","type","ocean"
 ];
 
 const container = document.getElementById("word-container");
-const input = document.getElementById("input-field");
 const timeEl = document.getElementById("time");
 const wpmEl = document.getElementById("wpm");
 const accuracyEl = document.getElementById("accuracy");
@@ -14,92 +15,160 @@ let timeLeft = 60;
 let timer = null;
 let correctWords = 0;
 let totalWords = 0;
+let currentTyped = "";
+let gameOver = false;
 
 function initWords() {
   container.innerHTML = "";
-  for (let i = 0; i < 80; i++) {
-    const word = document.createElement("span");
-    word.className = "word";
-    word.innerHTML = `<span class="letters">${words[Math.floor(Math.random() * words.length)]
-      .split("")
-      .map((l) => `<span class="letter">${l}</span>`)
-      .join("")}</span>`;
-    container.appendChild(word);
+  for (let i = 0; i < 100; i++) {
+    const wordText = words[Math.floor(Math.random() * words.length)];
+    const wordSpan = document.createElement("span");
+    wordSpan.className = "word";
+
+    const lettersWrapper = document.createElement("span");
+    wordText.split("").forEach(ch => {
+      const letterSpan = document.createElement("span");
+      letterSpan.className = "letter";
+      letterSpan.textContent = ch;
+      lettersWrapper.appendChild(letterSpan);
+    });
+
+    wordSpan.appendChild(lettersWrapper);
+    container.appendChild(wordSpan);
     container.append(" ");
   }
-  container.children[0].classList.add("current");
+
+  currentIndex = 0;
+  currentTyped = "";
+  const allWords = container.querySelectorAll(".word");
+  if (allWords[0]) {
+    allWords[0].classList.add("current");
+  }
 }
 
 function startTimer() {
-  if (timer) return;
+  if (timer || gameOver) return;
   timer = setInterval(() => {
     timeLeft--;
     timeEl.textContent = timeLeft;
-    if (timeLeft <= 0) endGame();
+    if (timeLeft <= 0) {
+      endGame();
+    }
   }, 1000);
 }
 
-input.addEventListener("input", (e) => {
-  startTimer();
-  const wordSpans = container.querySelectorAll(".word");
-  const currentWord = wordSpans[currentIndex];
+function updateLetterStyles() {
+  const allWords = container.querySelectorAll(".word");
+  const currentWord = allWords[currentIndex];
+  if (!currentWord) return;
   const letters = currentWord.querySelectorAll(".letter");
-  const typed = input.value.split("");
+  const typedChars = currentTyped.split("");
 
-  // letter coloring
-  letters.forEach((letter, i) => {
-    if (!typed[i]) {
-      letter.className = "letter"; // reset
-    } else if (typed[i] === letter.textContent) {
-      letter.className = "letter correct-letter";
+  letters.forEach((letterSpan, i) => {
+    if (!typedChars[i]) {
+      letterSpan.className = "letter"; // reset
+    } else if (typedChars[i] === letterSpan.textContent) {
+      letterSpan.className = "letter correct-letter";
     } else {
-      letter.className = "letter wrong-letter";
+      letterSpan.className = "letter wrong-letter";
     }
   });
+}
 
-  // move to next word on space
-  if (e.data === " ") {
-    const wordText = currentWord.textContent.trim();
-    const typedWord = input.value.trim();
-    if (typedWord === wordText) {
-      currentWord.classList.add("correct");
-      correctWords++;
-    } else {
-      currentWord.classList.add("incorrect");
+function handleKey(e) {
+  if (gameOver) return;
+
+  // start timer on first keypress
+  startTimer();
+
+  const allWords = container.querySelectorAll(".word");
+  const currentWord = allWords[currentIndex];
+  if (!currentWord) return;
+
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    if (currentTyped.length > 0) {
+      currentTyped = currentTyped.slice(0, -1);
+      updateLetterStyles();
     }
-    totalWords++;
-    currentWord.classList.remove("current");
-    currentIndex++;
-    if (wordSpans[currentIndex]) wordSpans[currentIndex].classList.add("current");
-    input.value = "";
+    return;
   }
 
-  const wpm = Math.round((correctWords / ((60 - timeLeft) / 60)) || 0);
-  const accuracy = totalWords ? Math.round((correctWords / totalWords) * 100) : 100;
+  if (e.key === " ") {
+    e.preventDefault();
+    const target = currentWord.textContent.trim();
+    const typedWord = currentTyped.trim();
+
+    if (typedWord.length > 0) {
+      totalWords++;
+      if (typedWord === target) {
+        correctWords++;
+        currentWord.classList.add("correct");
+      } else {
+        currentWord.classList.add("incorrect");
+      }
+    }
+
+    currentWord.classList.remove("current");
+    currentTyped = "";
+    currentIndex++;
+    if (allWords[currentIndex]) {
+      allWords[currentIndex].classList.add("current");
+    }
+
+    updateStats();
+    return;
+  }
+
+  // only handle single visible characters
+  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    currentTyped += e.key;
+    updateLetterStyles();
+    updateStats();
+  }
+}
+
+function updateStats() {
+  const elapsed = 60 - timeLeft;
+  const wpm = elapsed > 0 ? Math.round((correctWords * 60) / elapsed) : 0;
+  const accuracy = totalWords > 0 ? Math.round((correctWords / totalWords) * 100) : 100;
+
   wpmEl.textContent = wpm;
   accuracyEl.textContent = accuracy;
-});
+}
 
 function endGame() {
+  if (gameOver) return;
+  gameOver = true;
   clearInterval(timer);
-  input.disabled = true;
-  container.innerHTML = `<h2>Finished!</h2>
-    <p>WPM: <strong>${wpmEl.textContent}</strong></p>
-    <p>Accuracy: <strong>${accuracyEl.textContent}%</strong></p>`;
+  timer = null;
+
+  const finalWpm = wpmEl.textContent;
+  const finalAcc = accuracyEl.textContent;
+
+  container.innerHTML = `
+    <h2>Test Finished!</h2>
+    <p>Your speed: <strong>${finalWpm} WPM</strong></p>
+    <p>Your accuracy: <strong>${finalAcc}%</strong></p>
+    <p>Press "Restart" to try again.</p>
+  `;
 }
 
 restartBtn.addEventListener("click", () => {
   clearInterval(timer);
   timer = null;
-  currentIndex = 0;
   timeLeft = 60;
   correctWords = 0;
   totalWords = 0;
-  input.disabled = false;
-  input.value = "";
+  currentTyped = "";
+  gameOver = false;
   timeEl.textContent = "60";
   wpmEl.textContent = "0";
   accuracyEl.textContent = "100";
   initWords();
 });
+
+// listen for typing anywhere on the page
+document.addEventListener("keydown", handleKey);
+
 initWords();
