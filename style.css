@@ -79,3 +79,18 @@ h1 {
 #restart:hover {
   background: #00ffaa;
 }
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #00ff99;
+  vertical-align: bottom;
+  animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
